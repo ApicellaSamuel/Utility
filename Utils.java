@@ -3,7 +3,7 @@ import java.util.Map;
 
 
 public class Utils {
-    public class DPair<F, S> {
+    public static class DPair<F, S> {
         /** Crea una coppia di valori.
          * @param first  primo valore della coppia
          * @param second  secondo valore della coppia */
@@ -20,23 +20,23 @@ public class Utils {
 
         private F first;
         private S second;
-        
-        public <T,Integer> DPair<T, Integer>  rep(T[] ss) { //error
+	
+        public static <T,E> DPair<T, Integer> rep(T[] ss) {
         	Map<T, Integer> map = new HashMap<>();
             for(T s : ss){
             	if (map.containsKey(s)){
             		Integer add=map.get(s);
-            		map.put(s,add+1); //error
+            		map.put(s,add+1);
             	}else{
-            		map.put(s,1);  //error
+            		map.put(s,1);
             	}
             }
             
-            Integer max = 0; //error
+            Integer max = map.get(ss[0]) ;
             T val = ss[0];
             for(T s : ss){
-            	if (map.get(s)>max){  //error
-            		max =map.get(s);
+            	if (map.get(s) >= max){
+            		max = map.get(s);
             		val =  s;
             		}
             	}
@@ -51,4 +51,3 @@ public class Utils {
     public static void main(String[] args) { }
 
 }
-
