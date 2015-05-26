@@ -21,7 +21,7 @@ public class Utils {
         private F first;
         private S second;
         
-        public <T,Integer> DPair<T, Integer>  rep(T[] ss) {
+        public <T,Integer> DPair<T, Integer>  rep(T[] ss) { //error
         	Map<T, Integer> map = new HashMap<>();
             for(T s : ss){
             	if (map.containsKey(s)){
