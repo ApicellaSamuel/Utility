@@ -20,38 +20,35 @@ public class Utils {
 
         private F first;
         private S second;
-    }
-    public static <E, T> DPair<T, Integer>  rep(T[] ss) {
-    	Map<T, Integer> map = new HashMap<>();
-        for(T s : ss){
-        	if (map.containsKey(s)){
-        		Integer add=map.get(s);
-        		map.put(s,add+1);
-        	}else{
-        		map.put(s,0);
-        	}
+        
+        public <T,Integer> DPair<T, Integer>  rep(T[] ss) {
+        	Map<T, Integer> map = new HashMap<>();
+            for(T s : ss){
+            	if (map.containsKey(s)){
+            		Integer add=map.get(s);
+            		map.put(s,add+1); //error
+            	}else{
+            		map.put(s,1);  //error
+            	}
+            }
+            
+            Integer max = 0; //error
+            T val = ss[0];
+            for(T s : ss){
+            	if (map.get(s)>max){  //error
+            		max =map.get(s);
+            		val =  s;
+            		}
+            	}
+            
+            
+            return  new DPair< T,Integer >(val, max);
         }
-        
-        Integer max = 0;
-        T val = ss[0];
-       
-        for(T s : ss){
-        	if (map.get(s)>max){
-        		max =map.get(s);
-        		val =  s;
-        		//pair.setFirst(s);
-        		//pair.setSecond(max);
-        		}
-        	}
-        DPair<T,E> pair =new DPair<T,E>(val,(E) map.get(val));
-        
-        return (DPair<T, Integer>) pair;
     }
-    
-	
-    
+
     
     
     public static void main(String[] args) { }
 
 }
+
