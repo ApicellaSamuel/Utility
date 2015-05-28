@@ -1,4 +1,12 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Import {
 	
@@ -196,6 +205,37 @@ public class Import {
 		}catch (IOException e){System.out.println("Errore: cartella(root) inesistente");}
     	
     	return vis.treePc;
+    }
+    public static String read(InputStream in, Charset cs) {
+        BufferedReader r = new BufferedReader(new InputStreamReader(in, cs));
+        return r.lines().collect(Collectors.joining("\n"));
+    }
+    public static String loadPage(String url,Charset cs) throws IOException{
+    	URL urlA;  URLConnection urlB;
+    	urlA = new URL(url);
+    	urlB = urlA.openConnection();
+    	urlB.setRequestProperty("User-Agent", "Mozilla/5.0");
+        urlB.setRequestProperty("Accept", "text/html;q=1.0,*;q=0");
+        urlB.setRequestProperty("Accept-Encoding", "identity;q=1.0,*;q=0");
+        urlB.setConnectTimeout(5000);
+        urlB.setReadTimeout(10000);
+        urlB.connect();
+    	return read(urlB.getInputStream(), cs);
+    }
+    public static void asyncLoad(String[] urlSS){
+    	
+		for (String urlS: urlSS){
+			Thread asyncLoad = new Thread(() -> {
+				String resources;
+				try {
+					resources = Import.loadPage(urlS, StandardCharsets.UTF_8);
+					System.out.println(resources.length());
+				} catch (IOException e) {
+					System.out.println("Errore nel caricamento della pagina");
+				}
+			});
+			asyncLoad.start();
+		}
     }
     
 }
