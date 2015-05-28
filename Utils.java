@@ -42,6 +42,7 @@ public class Utils {
 		Import.giveDirectoryPc(root).printHTree(root);
 		treePc.printHTree(root);
 		treePcRoot.printHTree(root);
+    	String[] urlSS ={"http://www.linux.org/","https://www.python.org/"};
+		Import.asyncLoad(urlSS);
     }
-
 }
