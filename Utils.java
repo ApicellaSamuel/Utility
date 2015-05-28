@@ -1,3 +1,10 @@
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -120,36 +127,75 @@ public class Import {
     
     	
     }
-    public static class HTree<T>{//******** IN FASE DI EDIT *********
+    public static class HTree<T>{
     	public HTree(T root){
     		this.root=root;
-    		this.parent.put(root, null);
-    		this.child.put(root,new ArrayList<T>());
+    		parent=null;
+    		child.put(root,new ArrayList<T>());
     	}
-    	public void addChild(T elemP, T...elemC){
-    		for (T e : elemC ) { 
+    	public void addChild(T elemP, T...elemC){//***Type safety: Potential heap pollution 
+    		for (T e : elemC ) {				 //   via varargs parameter elemC***
+    			parent=elemP;
+    			child.get(elemP).add(e);
     			child.put(e,new ArrayList<T>()); 
-    			parent.put(e, elemP);
-    			
     		}
-    		
     	}
     	public List<T> getChild(T root){
     		return child.get(root);
     	}
     	public void printHTree(T root){
-    		System.out.println(root);
-    		List<T> rr = getChild(root);
-    		for (T r : rr){
-    			
-    		}
-			
+    		System.out.println(ricVisit(root,""));
+    		
     	}
-    	
-    	private Map<T,T> parent = new HashMap<>();
+    	private String ricVisit(T root, String indent){
+    			String rit = indent + " ";
+    			rit += root+"\n";
+    		    for (T c : getChild(root)){
+    		    	 rit += ricVisit(c,indent+"   |");
+    		    }
+    		    return rit;
+    	}
+    	public T getRoot() { return root; }
+    	@SuppressWarnings("unused")
+		private T parent;
     	private T root;
     	private Map<T,List<T>> child=new HashMap<>();
     	
+    }
+    public static HTree<Path> giveDirectoryPc(String root){
+    	Path rootPath = Paths.get(root).toAbsolutePath();
+    	return DirectoryPc(rootPath);
+    }
+    public static HTree<Path> giveDirectoryPc(Path root){
+    	Path rootPath = root;
+    	return DirectoryPc(rootPath);
+    }
+    public static HTree<Path> DirectoryPc(Path root){
+    	class visitor extends SimpleFileVisitor<Path>{
+    		@Override
+    		public FileVisitResult preVisitDirectory(Path dir,
+    				BasicFileAttributes attrs) throws IOException {
+    			if (!(dir==root)){
+    			treePc.addChild(dir.getParent(),dir);}
+    			return super.preVisitDirectory(dir, attrs);
+    		}
+    		@Override
+    		public FileVisitResult visitFile(Path file,
+    				BasicFileAttributes attrs) throws IOException {
+    			treePc.addChild(file.getParent(),file);
+    			return super.visitFile(file, attrs);
+    		}
+    		
+    		HTree<Path> treePc= new HTree<Path>(root);
+    	}
+    	
+    	visitor vis = new visitor();
+    	
+    	try {
+			Files.walkFileTree(root, vis);
+		}catch (IOException e){System.out.println("Errore: cartella(root) inesistente");}
+    	
+    	return vis.treePc;
     }
     
 }
