@@ -1,11 +1,12 @@
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 
-public class Utils {
-    
+public class Utils { 
     
     public static void main(String[] args) {
 		String strA[] = {"ok","no ","Si","ok!!","ok!!"};
@@ -31,9 +32,16 @@ public class Utils {
 		listA.add(strA[0]);listA.add(strA[1]);listA.add("forse");
 		listA = Import.removeArray(listA,strA);
 		listA.forEach(System.out::print);
-//EDIT	Import.HTree<String> tree= new Import.HTree<String>("Radice");
-//EDIT  tree.addChild("Radice","1_figlio_sinistro");
-		
+		Import.HTree<String> tree= new Import.HTree<String>("Radice");
+		tree.addChild("Radice","1_figlio","3_figlio");
+		tree.addChild("1_figlio","2_figlio","4_figlio");
+		tree.printHTree("Radice");
+    	Path root =Paths.get("/home/sam/Pubblici/").toAbsolutePath();
+		Import.HTree<Path> treePc= Import.giveDirectoryPc("/home/sam/Pubblici/");
+		Import.HTree<Path> treePcRoot= Import.giveDirectoryPc(root);
+		Import.giveDirectoryPc(root).printHTree(root);
+		treePc.printHTree(root);
+		treePcRoot.printHTree(root);
     }
 
 }
