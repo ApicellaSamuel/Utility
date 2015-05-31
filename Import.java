@@ -274,8 +274,9 @@ public class Import {
 	    long time = System.currentTimeMillis();
 	    while (System.currentTimeMillis() - time < 1000*seconds) ;
 	}
+    static long timeForQueue = System.currentTimeMillis();
     public static void queueTaskToSubmit(String[] urlSS){
-    	long time = System.currentTimeMillis();
+    	timeForQueue = System.currentTimeMillis();
     	MyQueue<String> coda = new MyQueue<String>();
     	for(String urlS : urlSS){
     		System.out.println(urlS);
@@ -284,16 +285,13 @@ public class Import {
     	ExecutorService exec = Executors.newFixedThreadPool(10);
     	Callable<Integer> task = null;
     	while(!coda.isEmpty()){
-    		waitFor(2);
+    		waitFor(1);
     		System.out.println("new");
     		String val = coda.extract();
-    		
     		task = (() -> submitToExecute(val));
     		exec.submit(task);
     	}
     	exec.shutdown();
-		System.out.println(String.format("Tempo: %.2f secondi",
-                (System.currentTimeMillis() - time)/1000.0));
     }
     public static  Integer submitToExecute(String url){
     	String page = null;
@@ -303,6 +301,8 @@ public class Import {
 			System.out.println("Errore nel controllo dell' url " +url);
 		}
     	System.out.println( page.length() );
+		System.out.println(String.format("Tempo: %.2f secondi",
+                (System.currentTimeMillis() - timeForQueue)/1000.0));
     	return page.length();
     }
     
