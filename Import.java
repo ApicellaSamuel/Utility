@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -21,6 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 public class Import {
@@ -33,7 +37,7 @@ public class Import {
             this.first = first;
             this.second = second;
         }
-
+        
         public F getFirst() { return first; }
         public S getSecond() { return second; }
 
@@ -142,8 +146,9 @@ public class Import {
     		parent=null;
     		child.put(root,new ArrayList<T>());
     	}
-    	public void addChild(T elemP, T...elemC){//***Type safety: Potential heap pollution 
-    		for (T e : elemC ) {				 //   via varargs parameter elemC***
+    	public void addChild(T elemP, T...elemC){
+    		//List<T> elemD = elemC.asList();
+    		for (T e : elemC ) {				
     			parent=elemP;
     			child.get(elemP).add(e);
     			child.put(e,new ArrayList<T>()); 
@@ -212,10 +217,10 @@ public class Import {
     }
     public static String loadPage(String url,Charset cs) throws IOException{
     	URL urlA;  URLConnection urlB;
-    	urlA = new URL(url);
+    	urlA = new URL(url);        				
     	urlB = urlA.openConnection();
     	urlB.setRequestProperty("User-Agent", "Mozilla/5.0");
-        urlB.setRequestProperty("Accept", "text/html;q=1.0,*;q=0");
+        urlB.setRequestProperty("Accept", "t ext/html;q=1.0,*;q=0");
         urlB.setRequestProperty("Accept-Encoding", "identity;q=1.0,*;q=0");
         urlB.setConnectTimeout(5000);
         urlB.setReadTimeout(10000);
@@ -223,19 +228,82 @@ public class Import {
     	return read(urlB.getInputStream(), cs);
     }
     public static void asyncLoad(String[] urlSS){
-    	
-		for (String urlS: urlSS){
-			Thread asyncLoad = new Thread(() -> {
-				String resources;
-				try {
-					resources = Import.loadPage(urlS, StandardCharsets.UTF_8);
-					System.out.println(resources.length());
-				} catch (IOException e) {
-					System.out.println("Errore nel caricamento della pagina");
+    	long time = System.currentTimeMillis();
+    	List<Callable<String>> tasks = new ArrayList<>();
+    	ExecutorService exec = Executors.newFixedThreadPool(10);
+    	for (String urlS : urlSS){
+    		tasks.add(() -> loadPage(urlS, StandardCharsets.UTF_8));
+    		}
+    		
+    		try {
+        		System.out.println(String.format("Tempo: %.2f secondi",
+                        (System.currentTimeMillis() - time)/1000.0));
+				List<Future<String>> res = exec.invokeAll(tasks);
+				System.out.println(String.format("Tempo: %.2f secondi",
+                        (System.currentTimeMillis() - time)/1000.0));
+				for(Future<String> r : res){
+					String page = r.get();
+					System.out.println(page.length());
 				}
-			});
-			asyncLoad.start();
+			} catch (InterruptedException | ExecutionException e) {
+				System.out.println("Errore nella fase di esecuzione");
+			}
+    		System.out.println(String.format("Tempo: %.2f secondi",
+                    (System.currentTimeMillis() - time)/1000.0));
+    	exec.shutdown();
+		
+    }
+    public static class MyQueue<T>{
+    	
+    	public void add(T elem) { coda.add(elem); }
+    	
+    	public boolean isEmpty(){ return coda.isEmpty();}
+    	
+    	public T extract(){
+    		T val = coda.get(0);
+    		coda.remove(0);
+    		return val;
+    		}
+    	
+    	public List<T> allElements() { return coda; }
+    	
+    	private List<T> coda = new ArrayList<T>();
+    	
+    }
+    public static void waitFor(int seconds) {
+	    long time = System.currentTimeMillis();
+	    while (System.currentTimeMillis() - time < 1000*seconds) ;
+	}
+    public static void queueTaskToSubmit(String[] urlSS){
+    	long time = System.currentTimeMillis();
+    	MyQueue<String> coda = new MyQueue<String>();
+    	for(String urlS : urlSS){
+    		System.out.println(urlS);
+    		coda.add(urlS);
+    	}
+    	ExecutorService exec = Executors.newFixedThreadPool(10);
+    	Callable<Integer> task = null;
+    	while(!coda.isEmpty()){
+    		waitFor(2);
+    		System.out.println("new");
+    		String val = coda.extract();
+    		
+    		task = (() -> submitToExecute(val));
+    		exec.submit(task);
+    	}
+    	exec.shutdown();
+		System.out.println(String.format("Tempo: %.2f secondi",
+                (System.currentTimeMillis() - time)/1000.0));
+    }
+    public static  Integer submitToExecute(String url){
+    	String page = null;
+    	try {
+			page = loadPage(url, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			System.out.println("Errore nel controllo dell' url " +url);
 		}
+    	System.out.println( page.length() );
+    	return page.length();
     }
     
 }
