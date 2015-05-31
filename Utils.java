@@ -42,7 +42,14 @@ public class Utils {
 		Import.giveDirectoryPc(root).printHTree(root);
 		treePc.printHTree(root);
 		treePcRoot.printHTree(root);
-    	String[] urlSS ={"http://www.linux.org/","https://www.python.org/"};
+    	String[] urlSS ={"http://www.linux.org/","https://www.python.org/",
+    			"http://www.ubuntu-it.org/", "http://www.androidworld.it/",
+    			"http://android.hdblog.it/","http://www.tuttoandroid.net/",
+    			"http://www.melablog.it/","https://www.apple.com/it/hotnews/",
+    			"http://www.liquida.it/apple/?coolbox=0_99_0_33785341",
+    			"http://punto-informatico.it/","http://www.zeusnews.it/",
+    			"http://www.hwupgrade.it/","http://www.ilsoftware.it/news.asp"};
 		Import.asyncLoad(urlSS);
+    	Import.queueTaskToSubmit(urlSS);
     }
 }
